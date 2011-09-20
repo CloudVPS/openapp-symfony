@@ -1,0 +1,23 @@
+Source: openapp-symfony
+Section: web
+Priority: optional
+Maintainer: Mark Schouten <mark@tuxis.nl>
+Build-Depends: debhelper
+Standards-Version: 3.9.1
+Homepage: http://www.openpanel.com/openapp/
+
+Package: openapp-symfony
+Architecture: any
+Pre-Depends: openapp-backup, openapp-tuning
+Depends: openpanel-openapp-mod-user, openpanel-openapp-mod-smtp, openpanel-openapp-mod-backup, php5-cli, openapp-phpmyadmin-installer, openapp-symfony-installer
+Provides: openapp-app
+Conflicts: openapp-app
+Description: This will install your Symfony OpenApp Appliance
+
+Package: openapp-symfony-installer
+Architecture: any
+Pre-Depends: mysql-server
+Depends: apache2, libapache2-mod-php5, php5-sqlite, php5-intl, php5-apc
+Provides: openapp-app
+Conflicts: openapp-app
+Description: This will install your Symfony OpenApp Appliance
