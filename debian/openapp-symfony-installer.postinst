@@ -48,11 +48,36 @@ install_symfony() {
 		tar --transform 's/^Symfony/./' -zxf /tmp/symfony-$$.tar.gz || fatal "Unable to extract Symfony package into ${INSTALLDIR}"
         chown -R www-data:www-data ${INSTALLDIR}
 
-		${MYSQL} ${OPTS} -e "CREATE DATABASE symfony CHARACTER SET utf8 COLLATE utf8_general_ci;" || fatal "Unable to create database symfony"
+		${MYSQL} ${OPTS} -e "CREATE DATABASE symfony CHARACTER SET utf8 COLLATE utf8_general_ci IF NOT EXISTS;" || fatal "Unable to create database symfony"
 		${MYSQL} ${OPTS} -e "GRANT USAGE ON mysql.* TO 'symfony'@'localhost' IDENTIFIED BY '$PASSWORD';" || fatal "Unable to create mysql-user symfony"
 		${MYSQL} ${OPTS} -e "GRANT ALL PRIVILEGES ON symfony.* to 'symfony'@'localhost';"|| fatal "Unable to set permissions to mysql-user symfony"
 		/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf flush-privileges || fatal "Unable to flush mysql privileges"
+
+        HASH=$(echo ${PASSWORD} | md5sum | cut -f 1 -d ' ')
+        cat <<EOB > ${INSTALLDIR}/app/config/parameters.ini
+; These parameters can be imported into other config files
+; by enclosing the key with % (like %database_user%)
+; Comments start with ';', as in php.ini
+[parameters]
+    database_driver   = pdo_mysql
+    database_host     = localhost
+    database_port     =
+    database_name     = symfony
+    database_user     = symfony
+    database_password = ${PASSWORD}
+
+    mailer_transport  = smtp
+    mailer_host       = localhost
+    mailer_user       =
+    mailer_password   =
+
+    locale            = en
+
+    secret            = ${HASH}
+EOB
+
     fi
+
 }
 
 case "$1" in
