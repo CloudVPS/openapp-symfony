@@ -27,6 +27,12 @@ fatal() {
 
 install_symfony() {
 	MIRROR=http://download.openpanel.com/openapp-files/symfony
+	PASSWORD=`pwgen -s 10`
+
+    echo "Mysql password: ${PASSWORD}"
+
+	MYSQL=/usr/bin/mysql
+	OPTS="--defaults-file=/etc/mysql/debian.cnf"
 
 	echo "Creating backup of current /var/www in /var/backups/var.www.symfony.tgz"
 	tar zcf /var/backups/var.www.symfony.tgz /var/www/
@@ -41,6 +47,11 @@ install_symfony() {
 		cd ${INSTALLDIR} || fatal "Unable to go into directory ${INSTALLDIR}"
 		tar --transform 's/^Symfony/./' -zxf /tmp/symfony-$$.tar.gz || fatal "Unable to extract Symfony package into ${INSTALLDIR}"
         chown -R www-data:www-data ${INSTALLDIR}
+
+		${MYSQL} ${OPTS} -e "CREATE DATABASE symfony CHARACTER SET utf8 COLLATE utf8_general_ci;" || fatal "Unable to create database symfony"
+		${MYSQL} ${OPTS} -e "GRANT USAGE ON mysql.* TO 'symfony'@'localhost' IDENTIFIED BY '$PASSWORD';" || fatal "Unable to create mysql-user symfony"
+		${MYSQL} ${OPTS} -e "GRANT ALL PRIVILEGES ON symfony.* to 'symfony'@'localhost';"|| fatal "Unable to set permissions to mysql-user symfony"
+		/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf flush-privileges || fatal "Unable to flush mysql privileges"
     fi
 }
 
