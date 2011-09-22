@@ -10,7 +10,7 @@ Package: openapp-symfony
 Architecture: all
 Pre-Depends: openapp-backup, openapp-tuning
 Suggests: openapp-xtrabackup
-Depends: openpanel-openapp-mod-user, openpanel-openapp-mod-symfony, openpanel-openapp-mod-smtp, openpanel-openapp-mod-backup, php5-cli, openapp-phpmyadmin-installer, openapp-symfony-installer
+Depends: openpanel-openapp-mod-user, openpanel-openapp-mod-mysql, openpanel-openapp-mod-smtp, openpanel-openapp-mod-backup, php5-cli, openapp-phpmyadmin-installer, openapp-symfony-installer
 Provides: openapp-app
 Conflicts: openapp-app
 Description: This will install your Symfony OpenApp Appliance
