@@ -1,0 +1,93 @@
+#!/bin/bash
+. /var/openpanel/api/sh/module.sh
+
+SSLDIR=/etc/ssl/private
+A2CONFDIR=/etc/apache2/sites-enabled
+
+Awstats.update() {
+  appid=awstats
+  awstats=$(coreval Awstats awstatspass)
+  [ -z "${awstats}" ] || authd runscript openapp-call "awstats" passwd "${awstats}"
+}
+
+Module.getconfig() {
+
+  cat << _EOF_
+  <openpanel.module>
+    <dict id="SymfonyAdmin" type="class">
+      <dict id="Admin">
+	    <string id="password">*</string>
+      </dict>
+    </dict>
+  </openpanel.module>
+_EOF_
+  exitquiet
+}
+
+restart_apache2() {
+cat <<EOB > $(pwd)/ssl-namevirtualhost.conf
+NameVirtualHost *:443
+EOB
+
+	[ ! -f /etc/apache2/conf.d/ssl-namevirtualhost.conf ] && authd installfile ssl-namevirtualhost.conf /etc/apache2/conf.d
+
+	authd reloadservice apache2
+}
+
+SymfonyAdmin.delete() {
+	authd deletefile ${A2CONFDIR}/default-ssl.conf
+	authd deletefile ${SSLDIR}/symfony.pem
+
+	restart_apache2
+}
+
+SymfonyAdmin.create() {
+	SSLCERT=$(coreval SymfonyAdmin pem)
+
+cat <<EOB > $(pwd)/symfony.pem
+${SSLCERT}
+EOB
+
+/var/openpanel/bin/validatepem.py $(pwd)/symfony.pem
+
+[ $? -eq 0 ] || exiterror "Your certificate has issues. Is the private key included (and without a passphrase)?"
+
+cat <<EOB > $(pwd)/default-ssl.conf
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+
+    DocumentRoot /var/www/web
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+    <Directory /var/www/web>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    ErrorLog /var/log/apache2/error.log
+    LogLevel warn
+    CustomLog /var/log/apache2/access.log combined
+
+	SSLEngine on
+	SSLProtocol -all +TLSv1 +SSLv3
+	SSLCertificateFile ${SSLDIR}/symfony.pem
+
+</VirtualHost>
+EOB
+
+	authd makedir ${SSLDIR}
+	authd installfile symfony.pem ${SSLDIR}
+	authd installfile default-ssl.conf ${A2CONFDIR}
+
+	restart_apache2
+}
+
+SymfonyAdmin.update() {
+    SymfonyAdmin.create
+}
+
+implement OpenAppSymfony.module
