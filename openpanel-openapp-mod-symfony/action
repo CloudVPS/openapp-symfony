@@ -15,7 +15,14 @@ Module.getconfig() {
   cat << _EOF_
   <openpanel.module>
     <dict id="SymfonyAdmin" type="class">
-	    <textarea id="pem">*</textarea>
+        <dict id="symfony" type="object">
+            <textarea id="pem"></textarea>
+        </dict>
+    </dict>
+    <dict id="Awstats" type="class">
+        <dict id="Awstats" type="object">
+            <password id="awstatspass">*</password>
+        </dict>
     </dict>
   </openpanel.module>
 _EOF_
@@ -23,13 +30,15 @@ _EOF_
 }
 
 restart_apache2() {
-cat <<EOB > $(pwd)/ssl-namevirtualhost.conf
+cat <<EOB1 > $(pwd)/ssl-namevirtualhost.conf
 NameVirtualHost *:443
-EOB
+EOB1
 
 	[ ! -f /etc/apache2/conf.d/ssl-namevirtualhost.conf ] && authd installfile ssl-namevirtualhost.conf /etc/apache2/conf.d
 
 	authd reloadservice apache2
+	exitok
+	#exitquiet
 }
 
 SymfonyAdmin.delete() {
@@ -42,9 +51,9 @@ SymfonyAdmin.delete() {
 SymfonyAdmin.create() {
 	SSLCERT=$(coreval SymfonyAdmin pem)
 
-cat <<EOB > $(pwd)/symfony.pem
+cat <<EOB2 > $(pwd)/symfony.pem
 ${SSLCERT}
-EOB
+EOB2
 
 /var/openpanel/bin/validatepem.py $(pwd)/symfony.pem
 
@@ -85,7 +94,13 @@ EOB
 }
 
 SymfonyAdmin.update() {
-    SymfonyAdmin.create
+	SSLCERT=$(coreval SymfonyAdmin pem)
+
+    if [ -n "${SSLCERT}" ]; then
+        SymfonyAdmin.create
+    else
+        SymfonyAdmin.delete
+    fi
 }
 
 implement OpenAppSymfony.module

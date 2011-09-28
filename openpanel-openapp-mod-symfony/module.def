@@ -55,6 +55,13 @@ class SymfonyAdmin				< uuid 0a5aad82-eb0f-454b-a61b-d83297073a36
 								< description Configure Symfony
 								
 								< capabilities update
+
+                                < listview pem id
+                                < required id
+
+	string id					: Username
+								< example Admin
+								< textwidth 16
 								
 	textarea pem				: Certificate for HTTPS
 								< textwidth 48
@@ -83,7 +90,7 @@ authd fileops
 								< group ssl-cert
 								< perms 0750
 
-	match wordpress.pem			: /etc/ssl/private
+	match symfony.pem			: /etc/ssl/private
 								< user root
 								< group root
 								< perms 0600
