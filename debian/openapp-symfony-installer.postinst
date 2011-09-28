@@ -35,15 +35,15 @@ check_file_signature() {
     # Fetch the keys
     for KEY in ${SIGNKEYS}; do
         SENDERKEY=$(gpg --batch --no-tty --search-key "${KEY}"  | tr '\n' ' ' | sed -e 's/.*key \([0-9A-F]\+\).*/\1/');
-        gpg --recv-keys --batch --no-tty "$SENDERKEY" > /dev/null 2>&1
+        gpg --recv-keys --batch --no-tty "$SENDERKEY"
         [ $? -gt 0 ] && return 1
     done
 
     # Fetch the signature
-    wget -q -O /tmp/symfony-$$.tar.gz.sig ${FILE}
+    wget -q -O /tmp/symfony-$$.tar.gz.sig ${FILE}.sig
     [ $? -eq 0 ] || return 2
 
-    gpg --verify /tmp/symfony-$$.tar.gz.sig > /dev/null 2>&1 || return 3
+    gpg --verify /tmp/symfony-$$.tar.gz.sig || return 3
 
     return 0
 }
