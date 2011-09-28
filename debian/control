@@ -17,7 +17,7 @@ Description: This will install your Symfony OpenApp Appliance
 
 Package: openapp-symfony-installer
 Architecture: all
-Pre-Depends: mysql-server
+Pre-Depends: mysql-server, gnupg
 Depends: apache2, libapache2-mod-php5, php5-sqlite, php5-intl, php-apc, git-core
 Provides: openapp-app-installer
 Conflicts: openapp-app-installer

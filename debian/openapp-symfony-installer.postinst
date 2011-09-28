@@ -18,11 +18,34 @@ set -e
 # the debian-policy package
 
 INSTALLDIR=/var/www
+SIGNKEYS="9AD617FF"
 
 fatal() {
 	echo "ERROR: $1"
 	[ -f /tmp/symfony-$$.tar.gz ] && rm -f /tmp/symfony-$$.tar.gz
 	exit 1
+}
+
+check_file_signature() {
+    FILE=$1
+
+    # Run gpg -k to make sure we have defaults in /root/.gnupg
+    gpg -k > /dev/null 2>&1
+
+    # Fetch the keys
+    for KEY in ${SIGNKEYS}; do
+        SENDERKEY=$(gpg --batch --no-tty --search-key "${KEY}"  | tr '\n' ' ' | sed -e 's/.*key \([0-9A-F]\+\).*/\1/');
+        gpg --recv-keys --batch --no-tty "$SENDERKEY" > /dev/null 2>&1
+        [ $? -gt 0 ] && return 1
+    done
+
+    # Fetch the signature
+    wget -q -O /tmp/symfony-$$.tar.gz.sig ${FILE}
+    [ $? -eq 0 ] || return 2
+
+    gpg --verify /tmp/symfony-$$.tar.gz.sig > /dev/null 2>&1 || return 3
+
+    return 0
 }
 
 install_symfony() {
@@ -43,6 +66,30 @@ install_symfony() {
 
 	wget -q -O /tmp/symfony-$$.tar.gz ${MIRROR}/symfony-newest.tar.gz
 	if [ $? -eq 0 ]; then
+        if [ -x /usr/bin/gpg ]; then
+            echo "Checking signature on downloaded file"
+            check_file_signature ${MIRROR}/symfony-newest.tar.gz
+
+            case "$?" in
+                0)
+                    echo "Succesful verification of the signature."
+                ;;
+                1)
+                    echo "WARNING: Could not verify signature! Could not download the needed keys"
+                ;;
+                2)
+                    echo "WARNING: Could not verify signature! Could not download the signature"
+                ;;
+                3)
+                    echo "WARNING: Could not verify signature! Verification failed."
+                ;;
+                *)
+                    echo "WARNING: Unknown error whily verifying signature!"
+                ;;
+            esac
+        else
+            echo "WARNING: Could not verify the signature on this download. Gpg is not installed"
+        fi
 		mkdir -p ${INSTALLDIR} || fatal "Unable to create directory ${INSTALLDIR}"
 		cd ${INSTALLDIR} || fatal "Unable to go into directory ${INSTALLDIR}"
 		tar --transform 's/^Symfony/./' -zxf /tmp/symfony-$$.tar.gz || fatal "Unable to extract Symfony package into ${INSTALLDIR}"
