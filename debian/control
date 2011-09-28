@@ -2,7 +2,7 @@ Source: openapp-symfony
 Section: web
 Priority: optional
 Maintainer: Mark Schouten <mark@tuxis.nl>
-Build-Depends: debhelper
+Build-Depends: debhelper (>= 5), openpanel-dev, imagemagick
 Standards-Version: 3.9.1
 Homepage: http://www.openpanel.com/openapp/
 
