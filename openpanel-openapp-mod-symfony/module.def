@@ -51,10 +51,10 @@ class SymfonyAdmin				< uuid 0a5aad82-eb0f-454b-a61b-d83297073a36
 								< singleton symfony
 								< shortname symfony
 								< title Symfony Settings
+                                < icon symfony.png
 								< description Configure Symfony
-                                < required pem
 								
-								< capabilities create update delete
+								< capabilities update
 								
 	textarea pem				: Certificate for HTTPS
 								< textwidth 48

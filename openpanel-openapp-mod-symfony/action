@@ -15,9 +15,7 @@ Module.getconfig() {
   cat << _EOF_
   <openpanel.module>
     <dict id="SymfonyAdmin" type="class">
-      <dict id="Admin">
-	    <string id="password">*</string>
-      </dict>
+	    <textarea id="pem">*</textarea>
     </dict>
   </openpanel.module>
 _EOF_
