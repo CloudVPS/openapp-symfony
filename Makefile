@@ -1,4 +1,4 @@
-OA_PREFIX=${CURDIR}/debian/openapp-symfony
+OA_PREFIX=${CURDIR}/debian/openapp-symfony-installer
 OP_PREFIX=${CURDIR}/debian/openpanel-openapp-mod-symfony
 OP_SOURCE=${CURDIR}/openpanel-openapp-mod-symfony
 
